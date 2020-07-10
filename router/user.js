@@ -132,7 +132,8 @@ router.post("/register", function (req, res) {
                 if (err) {
                     return res.json({
                         code: 1,
-                        message: "服务端发送错误！"
+                        message: "服务端发送错误！",
+                        err: err
                     });
                 }
                 if (data) {
