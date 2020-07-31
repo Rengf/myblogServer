@@ -25,7 +25,7 @@ app.use(function (req, res, next) {
             return val == req.url.substr(0, val.length)
         }
     });
-    // 我这里知识把登陆和注册请求去掉了，其他的多有请求都需要进行token校验 
+
     if (!isblack) {
         let token = req.headers.authorization.substring(6);
         let jwt = new Jwt(token);

@@ -1,23 +1,31 @@
 var express = require("express");
 var router = express.Router();
-// var User = require("../models/user");
+var User = require("../models/user");
 var Category = require("../models/category");
 
 var Article = require("../models/article")
 
 
 /**获取用户列表 */
-router.post("/userlist", function (req, res) {
-    var page = req.body.page;
-    var limit = req.body.limit;
+router.post("/getuserlist", function (req, res) {
+    var cdata = req.body.data;
+    var page = cdata.page;
+    var limit = cdata.limit;
+    var is_admin = cdata.is_admin;
+    var searchCondition = {};
+    if (is_admin > -1) {
+        searchCondition.is_admin = is_admin
+    }
     var count = 0;
-    User.find()
+    User.find(searchCondition)
         .countDocuments()
         .then(function (data) {
             count = data;
         });
 
-    User.find()
+    User.find(searchCondition, {
+            password: 0
+        })
         .sort({
             created_time: -1
         })
@@ -78,13 +86,22 @@ router.post("/getarticlelist", function (req, res) {
     var cdata = req.body.data;
     var limit = cdata.limit;
     var page = cdata.page;
+    var status = cdata.status;
+    var article_category = cdata.article_category
     var count = 0;
-    Article.find()
+    var searchCondition = {}
+    if (status >= -1) {
+        searchCondition.status = status
+    }
+    if (article_category) {
+        searchCondition.article_category = article_category
+    }
+    Article.find(searchCondition)
         .countDocuments()
         .then(function (data) {
             count = data;
         });
-    Article.find().populate('article_category', {
+    Article.find(searchCondition).populate('article_category', {
             category_name: 1,
             _id: 1
         }).sort({
@@ -112,7 +129,9 @@ router.post("/getarticlelist", function (req, res) {
 //获取最新文章列表
 router.get("/getnewarticlelist", function (req, res) {
 
-    Article.find({}, {
+    Article.find({
+            status: 1
+        }, {
             article_title: 1,
         }).sort({
             article_time: -1
@@ -155,6 +174,28 @@ router.get("/getarticle", function (req, res) {
                 message: "获取成功",
                 data: {
                     article
+                }
+            });
+        }
+    });
+});
+
+//获取类别
+router.get("/getcategory", function (req, res) {
+    var cdata = req.query;
+    var id = cdata.id;
+    Category.findById(id).then(function (category) {
+        if (!category) {
+            res.json({
+                code: 1,
+                message: "服务器发生错误"
+            });
+        } else {
+            res.json({
+                code: 0,
+                message: "获取成功",
+                data: {
+                    category
                 }
             });
         }
